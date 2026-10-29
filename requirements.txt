@@ -1,0 +1,16 @@
+# Core Web Framework
+Flask>=3.0.0,<4.0.0
+
+# Optional AWS CloudWatch Logging Integration
+boto3>=1.34.0
+watchtower>=3.0.0
+
+# Environment Variable Management
+python-dotenv>=1.0.0
+
+# Automated Testing
+pytest>=8.0.0
+
+# Production WSGI Server (Installed on Linux/Unix hosting environments)
+gunicorn>=21.0.0; platform_system != "Windows"
+

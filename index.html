@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MFA Physical Token Simulator & Security Operations Dashboard. Real-time OTP generation, hardware token telemetry, verification gateway, and AWS CloudWatch integration.">
+    <title>MFA Token Simulator | Security Operations Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-body">
+    <!-- Mobile Navigation Backdrop -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <div class="app-layout">
+        <!-- ===================================================================
+             SIDEBAR NAVIGATION
+             =================================================================== -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-title">MFA Token Simulator</span>
+                    <span class="brand-subtitle">Security Sentinel v2.0</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav" aria-label="Main Navigation">
+                <div class="nav-section-label">OPERATIONS</div>
+                <button class="nav-item active" data-view="dashboard">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="9"></rect>
+                        <rect x="14" y="3" width="7" height="5"></rect>
+                        <rect x="14" y="12" width="7" height="9"></rect>
+                        <rect x="3" y="16" width="7" height="5"></rect>
+                    </svg>
+                    <span>Dashboard</span>
+                </button>
+
+                <button class="nav-item" data-view="tokens">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="7.5" cy="15.5" r="5.5"></circle>
+                        <path d="m21 2-9.6 9.6"></path>
+                        <path d="m15.5 7.5 3 3L22 7l-3-3"></path>
+                    </svg>
+                    <span>Token Management</span>
+                </button>
+
+                <button class="nav-item" data-view="auth">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                    <span>MFA Authentication</span>
+                    <span class="nav-badge" id="navTokenBadge">Ready</span>
+                </button>
+
+                <div class="nav-section-label">TELEMETRY &amp; AUDIT</div>
+                <button class="nav-item" data-view="logs">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    <span>Audit Logs</span>
+                </button>
+
+                <button class="nav-item" data-view="settings">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    <span>Settings</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="system-mini-card">
+                    <div class="mini-status-row">
+                        <span class="status-dot dot-green" id="sideFlaskDot"></span>
+                        <span class="mini-title">Flask Backend: Online</span>
+                    </div>
+                    <div class="mini-status-row">
+                        <span class="status-dot dot-gray" id="sideCwDot"></span>
+                        <span class="mini-subtitle" id="sideCwText">CloudWatch: Disabled</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ===================================================================
+             MAIN CONTENT WRAPPER
+             =================================================================== -->
+        <div class="main-wrapper">
+            <!-- TOP NAVIGATION BAR -->
+            <header class="top-nav">
+                <div class="top-nav-left">
+                    <button class="mobile-toggle-btn" id="mobileMenuBtn" aria-label="Toggle navigation menu">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <div class="view-header-title">
+                        <h1 id="currentViewTitle">Security Operations Dashboard</h1>
+                        <p class="view-subtitle" id="currentViewSubtitle">Real-time MFA possession-token telemetry and authentication metrics</p>
+                    </div>
+                </div>
+
+                <div class="top-nav-right">
+                    <!-- Live Clock -->
+                    <div class="live-clock" id="liveClock" title="Current UTC Timestamp">--:--:-- UTC</div>
+
+                    <!-- CloudWatch Status Pill -->
+                    <div class="status-pill" id="cwStatusPill" title="AWS CloudWatch Connection State">
+                        <span class="status-dot dot-gray" id="cwStatusDot"></span>
+                        <span class="status-label">AWS Logs:</span>
+                        <span class="status-value" id="cwStatusLabel">Checking...</span>
+                    </div>
+
+                    <!-- Quick Action Trigger -->
+                    <button class="btn btn-primary btn-small" id="quickGenerateTopBtn" title="Generate OTP directly">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                        </svg>
+                        <span>Generate OTP</span>
+                    </button>
+
+                    <!-- User Profile / Simulator Mode -->
+                    <div class="user-pill" title="Simulator Mode">
+                        <div class="user-avatar">ADM</div>
+                        <div class="user-info">
+                            <span class="user-name">SecOps Admin</span>
+                            <span class="user-role">Student Lab</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ===============================================================
+                 VIEWS CONTAINER (Single Page Application Switcher)
+                 =============================================================== -->
+            <main class="content-area">
+
+                <!-- -----------------------------------------------------------
+                     VIEW 1: DASHBOARD OVERVIEW
+                     ----------------------------------------------------------- -->
+                <section class="view-panel active" id="view-dashboard">
+                    <!-- Summary KPI Cards Grid (4 Cards) -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-header">
+                                <span class="kpi-title">Total OTPs Generated</span>
+                                <div class="kpi-icon kpi-icon-blue">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="23 4 23 10 17 10"></polyline>
+                                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="kpi-body">
+                                <span class="kpi-value" id="kpiTotalGenerated">0</span>
+                                <span class="kpi-trend trend-positive">CSPRNG Protected</span>
+                            </div>
+                            <div class="kpi-footer">Cumulative tokens issued this session</div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-header">
+                                <span class="kpi-title">Successful Verifications</span>
+                                <div class="kpi-icon kpi-icon-green">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="kpi-body">
+                                <span class="kpi-value" id="kpiTotalVerified">0</span>
+                                <span class="kpi-badge badge-success" id="kpiSuccessRate">100% Rate</span>
+                            </div>
+                            <div class="kpi-footer">Tokens verified &amp; destroyed (single-use)</div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-header">
+                                <span class="kpi-title">Failed / Blocked Attempts</span>
+                                <div class="kpi-icon kpi-icon-red">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="kpi-body">
+                                <span class="kpi-value" id="kpiTotalFailed">0</span>
+                                <span class="kpi-badge badge-danger" id="kpiRateLimitedBadge">0 Rate-Limited</span>
+                            </div>
+                            <div class="kpi-footer">Replayed, expired, or incorrect attempts</div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-header">
+                                <span class="kpi-title">Token Session Status</span>
+                                <div class="kpi-icon kpi-icon-purple">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="kpi-body">
+                                <span class="kpi-value" id="kpiTokenState">Standby</span>
+                                <span class="kpi-countdown" id="kpiCountdownText">--:--</span>
+                            </div>
+                            <div class="kpi-footer" id="kpiTtlSub">Configured TTL: 120s</div>
+                        </div>
+                    </div>
+
+                    <!-- Charts & Quick Fob Row -->
+                    <div class="dashboard-analytics-row">
+                        <!-- Chart Card -->
+                        <div class="card analytics-chart-card">
+                            <div class="card-header">
+                                <div>
+                                    <h2 class="card-title">Authentication Activity Telemetry</h2>
+                                    <p class="card-subtitle">Real-time distribution of authentications (Success vs Failed vs Expired)</p>
+                                </div>
+                                <div class="chart-legend">
+                                    <span class="legend-item"><span class="legend-dot dot-success"></span> Verified</span>
+                                    <span class="legend-item"><span class="legend-dot dot-danger"></span> Failed</span>
+                                    <span class="legend-item"><span class="legend-dot dot-warning"></span> Expired</span>
+                                </div>
+                            </div>
+                            <div class="chart-canvas-container">
+                                <canvas id="activityChartCanvas" width="700" height="230"></canvas>
+                            </div>
+                            <div class="chart-caption-row">
+                                <span class="badge badge-dark">Telemetry Engine: Active</span>
+                                <span class="demo-tag" title="Canvas rendering based on session telemetry">[LIVE SESSION DATA]</span>
+                            </div>
+                        </div>
+
+                        <!-- Mini Token Widget -->
+                        <div class="card quick-token-widget">
+                            <div class="card-header">
+                                <div>
+                                    <span class="badge badge-purple">Hardware Keyfob</span>
+                                    <h2 class="card-title">FOB-600 Quick State</h2>
+                                </div>
+                                <span class="badge badge-neutral" id="miniFobBadge">Standby</span>
+                            </div>
+
+                            <div class="mini-lcd">
+                                <span class="mini-lcd-digits" id="miniLcdOtp">------</span>
+                                <span class="mini-lcd-sub" id="miniLcdSub">Awaiting generation</span>
+                            </div>
+
+                            <div class="mini-specs-list">
+                                <div class="mini-spec-row">
+                                    <span class="spec-name">Serial Number:</span>
+                                    <span class="spec-data" id="miniSerial">FOB-600-X7A-8892</span>
+                                </div>
+                                <div class="mini-spec-row">
+                                    <span class="spec-name">Internal Battery:</span>
+                                    <span class="spec-data text-emerald" id="miniBattery">98% (Healthy)</span>
+                                </div>
+                                <div class="mini-spec-row">
+                                    <span class="spec-name">Clock Drift:</span>
+                                    <span class="spec-data" id="miniDrift">+0.018s (NTP Synced)</span>
+                                </div>
+                            </div>
+
+                            <div class="quick-fob-actions">
+                                <button class="btn btn-primary btn-block" data-nav-target="auth">
+                                    <span>Open Full Token Simulator</span>
+                                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="9 18 15 12 9 6"></polyline>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Attempts & Security Alerts Row -->
+                    <div class="dashboard-bottom-grid">
+                        <!-- Recent Authentication Attempts Table -->
+                        <div class="card recent-attempts-card">
+                            <div class="card-header">
+                                <div>
+                                    <h2 class="card-title">Recent Authentication Attempts</h2>
+                                    <p class="card-subtitle">Real-time log of verification requests handled by the server</p>
+                                </div>
+                                <button class="btn btn-secondary btn-small" id="refreshStatsBtn">
+                                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="23 4 23 10 17 10"></polyline>
+                                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                                    </svg>
+                                    <span>Refresh</span>
+                                </button>
+                            </div>
+
+                            <div class="table-container">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Timestamp</th>
+                                            <th>Source IP</th>
+                                            <th>Action</th>
+                                            <th>Status</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recentAttemptsTableBody">
+                                        <tr>
+                                            <td colspan="5" class="table-empty">No authentication attempts recorded yet. Generate and verify an OTP to populate telemetry.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Security Alerts & Policies Card -->
+                        <div class="card security-policies-card">
+                            <div class="card-header">
+                                <div>
+                                    <span class="badge badge-info">Zero-Trust Policies</span>
+                                    <h2 class="card-title">Active Security Enforcement</h2>
+                                </div>
+                            </div>
+
+                            <div class="policy-alerts-stack">
+                                <div class="alert-box alert-box-success">
+                                    <div class="alert-icon">🛡️</div>
+                                    <div class="alert-content">
+                                        <h4>Single-Use Token Guarantee</h4>
+                                        <p>OTPs are immediately destroyed upon successful verification. Replay attacks are rejected.</p>
+                                    </div>
+                                </div>
+
+                                <div class="alert-box alert-box-warning">
+                                    <div class="alert-icon">⚡</div>
+                                    <div class="alert-content">
+                                        <h4>Brute-Force Rate Limiting</h4>
+                                        <p>Maximum 5 failed attempts locks out the active session. 5-second cooldown on generation.</p>
+                                    </div>
+                                </div>
+
+                                <div class="alert-box alert-box-info" id="cwAlertBox">
+                                    <div class="alert-icon">☁️</div>
+                                    <div class="alert-content">
+                                        <h4 id="cwAlertTitle">CloudWatch Observability</h4>
+                                        <p id="cwAlertText">Running in local logging mode. AWS credentials can be configured anytime in Settings.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- -----------------------------------------------------------
+                     VIEW 2: TOKEN MANAGEMENT
+                     ----------------------------------------------------------- -->
+                <section class="view-panel" id="view-tokens">
+                    <div class="view-intro-banner">
+                        <div>
+                            <h2>Hardware Token Inventory &amp; Lifecycle</h2>
+                            <p>Manage and calibrate physical possession-factor security tokens enrolled in your organization.</p>
+                        </div>
+                        <button class="btn btn-secondary btn-small" id="resyncTokenBtn">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            <span>Re-Sync Clock Drift</span>
+                        </button>
+                    </div>
+
+                    <!-- Token Device Card Grid -->
+                    <div class="token-management-grid">
+                        <div class="card token-spec-sheet">
+                            <div class="card-header">
+                                <div>
+                                    <span class="badge badge-purple">Active Device</span>
+                                    <h2 class="card-title" id="tokenModelTitle">SECURE-KEY FOB-600</h2>
+                                </div>
+                                <span class="badge badge-success">Enrolled</span>
+                            </div>
+
+                            <div class="device-spec-table">
+                                <div class="spec-row">
+                                    <span class="spec-title">Device Serial:</span>
+                                    <code class="spec-code" id="specSerial">FOB-600-X7A-8892</code>
+                                </div>
+                                <div class="spec-row">
+                                    <span class="spec-title">Firmware Revision:</span>
+                                    <span class="spec-desc" id="specFirmware">v2.4.1-patch3 (Crypto-Core)</span>
+                                </div>
+                                <div class="spec-row">
+                                    <span class="spec-title">PRNG Algorithm:</span>
+                                    <span class="spec-desc">Python CSPRNG (secrets.randbelow)</span>
+                                </div>
+                                <div class="spec-row">
+                                    <span class="spec-title">Clock Drift Offset:</span>
+                                    <span class="spec-desc text-cyan" id="specDrift">+0.018s (NTP Synchronized)</span>
+                                </div>
+                                <div class="spec-row">
+                                    <span class="spec-title">Battery Level:</span>
+                                    <span class="spec-desc text-emerald" id="specBattery">98% (Expected: 4.8 Years)</span>
+                                </div>
+                                <div class="spec-row">
+                                    <span class="spec-title">Enrolled User:</span>
+                                    <span class="spec-desc">Student / Classroom Demo Session</span>
+                                </div>
+                                <div class="spec-row">
+                                    <span class="spec-title">Last Calibrated:</span>
+                                    <span class="spec-desc" id="specLastSynced">--</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <div>
+                                    <span class="badge badge-info">Device Directory</span>
+                                    <h2 class="card-title">Enrolled Hardware Fleet</h2>
+                                </div>
+                                <span class="demo-tag">[SIMULATED DIRECTORY DATA]</span>
+                            </div>
+
+                            <div class="table-container">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Token ID</th>
+                                            <th>Model</th>
+                                            <th>Assigned User</th>
+                                            <th>Status</th>
+                                            <th>Battery</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="highlight-row">
+                                            <td><code>FOB-600-X7A</code></td>
+                                            <td>SecureKey Fob 600</td>
+                                            <td>Active Demo Student</td>
+                                            <td><span class="badge badge-success">ONLINE</span></td>
+                                            <td>98%</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>YUBI-5C-002</code></td>
+                                            <td>YubiKey 5C NFC</td>
+                                            <td>admin@corp.internal</td>
+                                            <td><span class="badge badge-neutral">STANDBY</span></td>
+                                            <td>N/A (NFC)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>RSA-SEC-910</code></td>
+                                            <td>RSA SecurID 700</td>
+                                            <td>devops@corp.internal</td>
+                                            <td><span class="badge badge-success">ONLINE</span></td>
+                                            <td>84%</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>TITAN-K-441</code></td>
+                                            <td>Titan Security Key</td>
+                                            <td>security@corp.internal</td>
+                                            <td><span class="badge badge-neutral">STANDBY</span></td>
+                                            <td>100%</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- -----------------------------------------------------------
+                     VIEW 3: MFA AUTHENTICATION (Interactive Simulator)
+                     ----------------------------------------------------------- -->
+                <section class="view-panel" id="view-auth">
+                    <div class="info-card">
+                        <div class="info-header">
+                            <span class="badge badge-info">Interactive Simulator Lab</span>
+                            <h2>Multi-Factor Authentication: Possession-Token Simulator</h2>
+                        </div>
+                        <p class="info-text">
+                            Test the possession factor in real-time. Generate a 6-digit one-time password on the simulated hardware keyfob, observe the dynamic countdown timer, submit the code into the verification gateway, and inspect the resulting server-side single-use enforcement.
+                        </p>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <!-- Left Card: Physical Hardware Token Simulator -->
+                        <div class="card token-card">
+                            <div class="card-header">
+                                <div class="card-title-group">
+                                    <span class="badge badge-purple">Factor 2: Possession</span>
+                                    <h2>Physical Hardware Token</h2>
+                                </div>
+                                <span class="badge badge-neutral" id="tokenStateBadge">Standby</span>
+                            </div>
+
+                            <div class="token-fob">
+                                <div class="token-brand-label">SECURE-KEY <span>FOB-600</span></div>
+                                
+                                <!-- LCD Screen -->
+                                <div class="lcd-screen" id="lcdScreen" aria-live="polite">
+                                    <span class="lcd-digits" id="otpDisplay">------</span>
+                                    <span class="lcd-caption" id="lcdCaption">Press 'Generate OTP'</span>
+                                </div>
+
+                                <!-- Countdown Timer -->
+                                <div class="timer-section" id="timerSection" style="display: none;">
+                                    <div class="timer-header">
+                                        <span class="timer-label">Token Validity</span>
+                                        <span class="timer-countdown" id="timerCountdown">02:00</span>
+                                    </div>
+                                    <div class="progress-track" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                                        <div class="progress-bar" id="progressBar" style="width: 100%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="button-stack">
+                                <button id="generateBtn" class="btn btn-primary">
+                                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                                    </svg>
+                                    <span id="generateBtnText">Generate New OTP</span>
+                                </button>
+
+                                <button id="quickFillBtn" class="btn btn-ghost" style="display: none;" title="Auto-fill OTP into verifier">
+                                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                                    </svg>
+                                    <span>Auto-Fill into Verifier</span>
+                                </button>
+                            </div>
+
+                            <div class="specs-grid">
+                                <div class="spec-item">
+                                    <span class="spec-label">Algorithm</span>
+                                    <span class="spec-value">CSPRNG (secrets)</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Default TTL</span>
+                                    <span class="spec-value" id="specTtl">120 Seconds</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Replay Defense</span>
+                                    <span class="spec-value">Single-Use</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Card: Authenticator Verification Gateway -->
+                        <div class="card verifier-card">
+                            <div class="card-header">
+                                <div class="card-title-group">
+                                    <span class="badge badge-blue">Authentication Server</span>
+                                    <h2>Verify One-Time Password</h2>
+                                </div>
+                                <span class="badge badge-neutral" id="verifyStateBadge">Awaiting Input</span>
+                            </div>
+
+                            <p class="verifier-description">
+                                Enter the 6-digit one-time password displayed on your physical token to complete authentication.
+                            </p>
+
+                            <form id="verifyForm" class="verifier-form" onsubmit="return false;">
+                                <div class="form-group">
+                                    <label for="otpInput" class="input-label">
+                                        <span>6-Digit Verification Code</span>
+                                        <span class="input-counter" id="inputCounter">0 / 6</span>
+                                    </label>
+                                    <div class="input-wrapper">
+                                        <input
+                                            type="text"
+                                            id="otpInput"
+                                            class="otp-input"
+                                            placeholder="000000"
+                                            maxlength="6"
+                                            inputmode="numeric"
+                                            pattern="[0-9]*"
+                                            autocomplete="one-time-code"
+                                            spellcheck="false"
+                                        >
+                                    </div>
+                                </div>
+
+                                <div class="button-stack">
+                                    <button type="submit" id="verifyBtn" class="btn btn-success" disabled>
+                                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                        </svg>
+                                        <span id="verifyBtnText">Verify OTP</span>
+                                    </button>
+
+                                    <button type="button" id="resetBtn" class="btn btn-secondary">
+                                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                                            <path d="M3 3v5h5"></path>
+                                        </svg>
+                                        <span>Reset Simulator</span>
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- Result Feedback Banner -->
+                            <div id="resultCard" class="result-card" style="display: none;" role="alert">
+                                <div class="result-icon-wrapper" id="resultIcon">✓</div>
+                                <div class="result-content">
+                                    <h3 class="result-title" id="resultTitle">Verification Status</h3>
+                                    <p class="result-message" id="resultMessage">Result message appears here.</p>
+                                    <p class="result-subtext" id="resultSubtext"></p>
+                                </div>
+                            </div>
+
+                            <div class="security-rules-list">
+                                <h4>Server-Side Security Policies</h4>
+                                <ul>
+                                    <li>✓ <strong>Single-Use Guarantee:</strong> Tokens are destroyed immediately upon successful verification.</li>
+                                    <li>✓ <strong>Brute-Force Lockout:</strong> Maximum 5 failed verification attempts before token is revoked.</li>
+                                    <li>✓ <strong>Constant-Time Comparison:</strong> Protected against timing side-channel attacks via <code>secrets.compare_digest</code>.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- -----------------------------------------------------------
+                     VIEW 4: AUDIT LOGS
+                     ----------------------------------------------------------- -->
+                <section class="view-panel" id="view-logs">
+                    <div class="audit-controls-card card">
+                        <div class="audit-controls-header">
+                            <div>
+                                <h2>Security Audit Telemetry &amp; Log Stream</h2>
+                                <p>Detailed zero-knowledge security logs captured by the Python Flask backend.</p>
+                            </div>
+                            <div class="audit-actions">
+                                <button class="btn btn-secondary btn-small" id="clearAuditLogsBtn">
+                                    <span>Clear Logs</span>
+                                </button>
+                                <button class="btn btn-primary btn-small" id="refreshAuditBtn">
+                                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="23 4 23 10 17 10"></polyline>
+                                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                                    </svg>
+                                    <span>Refresh Logs</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Filter and Search Bar -->
+                        <div class="audit-filters-bar">
+                            <div class="search-box">
+                                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                <input type="text" id="logSearchInput" placeholder="Filter by event type, keyword, or IP...">
+                            </div>
+
+                            <div class="filter-pills" id="logFilterPills">
+                                <button class="filter-pill active" data-filter="ALL">All Events</button>
+                                <button class="filter-pill" data-filter="INFO">Info</button>
+                                <button class="filter-pill" data-filter="SUCCESS">Success</button>
+                                <button class="filter-pill" data-filter="WARNING">Warning</button>
+                            </div>
+                        </div>
+
+                        <!-- Dedicated Log Viewer Stream -->
+                        <div class="full-log-viewer" id="fullLogViewer">
+                            <div class="log-stream" id="fullLogStream">
+                                <div class="log-entry log-entry-info">
+                                    <span class="log-time">[System Init]</span>
+                                    <span class="log-tag tag-info">SYS_READY</span>
+                                    <span class="log-msg">Audit telemetry initialized. Ready for events.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="audit-footer">
+                            <div class="audit-info-pill">
+                                <span class="label">Target AWS Log Group:</span>
+                                <code id="cwLogGroupDisplay">/aws/flask/MFA-Token-Simulator</code>
+                            </div>
+                            <div class="audit-info-pill">
+                                <span class="label">Zero-Knowledge Guarantee:</span>
+                                <span>No raw OTPs or credentials are ever recorded in application logs.</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- -----------------------------------------------------------
+                     VIEW 5: SETTINGS
+                     ----------------------------------------------------------- -->
+                <section class="view-panel" id="view-settings">
+                    <div class="settings-grid">
+                        <!-- Operational Parameters Form -->
+                        <div class="card settings-card">
+                            <div class="card-header">
+                                <div>
+                                    <span class="badge badge-blue">Runtime Configuration</span>
+                                    <h2 class="card-title">Simulator Operational Policies</h2>
+                                </div>
+                            </div>
+
+                            <form id="settingsForm" class="settings-form" onsubmit="return false;">
+                                <div class="form-group">
+                                    <label for="settingTtl" class="setting-label">
+                                        <span>OTP Time-To-Live (TTL)</span>
+                                        <span class="setting-hint">Validity window for each generated OTP</span>
+                                    </label>
+                                    <select id="settingTtl" class="form-select">
+                                        <option value="30">30 Seconds (Fast Expiry Testing)</option>
+                                        <option value="60">60 Seconds</option>
+                                        <option value="120" selected>120 Seconds (Standard Default)</option>
+                                        <option value="300">300 Seconds (5 Minutes)</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="settingRateLimit" class="setting-label">
+                                        <span>Generation Cooldown Rate Limit</span>
+                                        <span class="setting-hint">Seconds a client IP must wait before generating a new OTP</span>
+                                    </label>
+                                    <select id="settingRateLimit" class="form-select">
+                                        <option value="0">0 Seconds (Disabled)</option>
+                                        <option value="3">3 Seconds</option>
+                                        <option value="5" selected>5 Seconds (Recommended)</option>
+                                        <option value="10">10 Seconds</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="settingMaxAttempts" class="setting-label">
+                                        <span>Max Verification Attempts (Lockout)</span>
+                                        <span class="setting-hint">Failed attempts before the active OTP is destroyed</span>
+                                    </label>
+                                    <select id="settingMaxAttempts" class="form-select">
+                                        <option value="3">3 Attempts (Strict)</option>
+                                        <option value="5" selected>5 Attempts (Standard)</option>
+                                        <option value="10">10 Attempts (Lenient)</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="settingDemoShowOtp" checked>
+                                        <span><strong>Educational Demo Display:</strong> Return OTP in JSON response to render in simulated LCD. (Uncheck to simulate out-of-band delivery).</span>
+                                    </label>
+                                </div>
+
+                                <button type="submit" id="saveSettingsBtn" class="btn btn-primary">
+                                    <span>Save &amp; Apply Policies</span>
+                                </button>
+                                <span id="settingsSaveStatus" class="save-status-msg"></span>
+                            </form>
+                        </div>
+
+                        <!-- AWS CloudWatch Integration Info Card -->
+                        <div class="card aws-info-card">
+                            <div class="card-header">
+                                <div>
+                                    <span class="badge badge-purple">Cloud Observability</span>
+                                    <h2 class="card-title">AWS CloudWatch Status</h2>
+                                </div>
+                                <span class="badge badge-neutral" id="settingsCwBadge">Disabled (Local)</span>
+                            </div>
+
+                            <p class="aws-desc">
+                                When enabled, your local Flask application streams structured security events to Amazon Web Services using <code>boto3</code> and <code>watchtower</code>.
+                            </p>
+
+                            <div class="aws-details-box">
+                                <div class="aws-row">
+                                    <span class="label">AWS Region:</span>
+                                    <code id="settingsCwRegion">ap-southeast-2 (Sydney)</code>
+                                </div>
+                                <div class="aws-row">
+                                    <span class="label">Log Group:</span>
+                                    <code id="settingsCwGroup">/aws/flask/MFA-Token-Simulator</code>
+                                </div>
+                                <div class="aws-row">
+                                    <span class="label">Log Stream:</span>
+                                    <code>simulator-flask-stream</code>
+                                </div>
+                            </div>
+
+                            <div class="notice-banner">
+                                <span class="notice-icon">💡</span>
+                                <span>
+                                    <strong>How to enable AWS CloudWatch:</strong><br>
+                                    1. Run <code>aws configure</code> in your terminal.<br>
+                                    2. Set <code>CLOUDWATCH_ENABLED=1</code> in your <code>.env</code> file.<br>
+                                    3. Restart the Flask application.
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
